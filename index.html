@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>KisanSaathi</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <header>
+
+            <div>
+                <h1>🌱 KisanSaathi</h1>
+                <p>Smart Farming Dashboard</p>
+            </div>
+
+            <div class="connection">
+
+                <span id="statusDot"></span>
+
+                <span id="connectionText">
+                    Arduino Disconnected
+                </span>
+
+                <button id="connectButton">
+                    🔌 Connect Arduino
+                </button>
+
+            </div>
+
+        </header>
+
+
+        <main>
+
+            <!-- CROP -->
+            <section class="crop-banner">
+
+                <div>
+                    <span class="small-title">CURRENT CROP</span>
+
+                    <h2>🍅 Tomato</h2>
+
+                    <p>
+                        Monitoring your farm conditions in real time.
+                    </p>
+                </div>
+
+                <div class="crop-status">
+
+                    <span class="status-good">
+                        ● Healthy
+                    </span>
+
+                </div>
+
+            </section>
+
+
+            <!-- SENSOR CARDS -->
+
+            <section class="grid">
+
+                <div class="card">
+
+                    <div class="card-icon">🌡️</div>
+
+                    <p>Temperature</p>
+
+                    <h2>
+                        <span id="temperature">--</span> °C
+                    </h2>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="card-icon">💧</div>
+
+                    <p>Humidity</p>
+
+                    <h2>
+                        <span id="humidity">--</span> %
+                    </h2>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="card-icon">🌱</div>
+
+                    <p>Soil Moisture</p>
+
+                    <h2>
+                        <span id="soil">--</span> %
+                    </h2>
+
+                    <div class="progress">
+                        <div id="soilBar"></div>
+                    </div>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="card-icon">☀️</div>
+
+                    <p>Light Level</p>
+
+                    <h2>
+                        <span id="light">--</span> %
+                    </h2>
+
+                    <div class="progress">
+                        <div id="lightBar"></div>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- IRRIGATION -->
+
+            <section class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <span class="small-title">
+                            IRRIGATION SYSTEM
+                        </span>
+
+                        <h2>💦 Water Pump</h2>
+
+                    </div>
+
+                    <span id="pumpStatus"
+                          class="pump-off">
+                        OFF
+                    </span>
+
+                </div>
+
+
+                <div class="pump-controls">
+
+                    <button
+                        id="pumpOn"
+                        class="primary">
+                        START PUMP
+                    </button>
+
+                    <button
+                        id="pumpOff"
+                        class="danger">
+                        STOP PUMP
+                    </button>
+
+                </div>
+
+
+                <div class="mode">
+
+                    <span>
+                        Irrigation Mode
+                    </span>
+
+                    <select id="modeSelect">
+
+                        <option value="AUTO">
+                            Automatic
+                        </option>
+
+                        <option value="MANUAL">
+                            Manual
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </section>
+
+
+            <!-- WEATHER -->
+
+            <section class="two-column">
+
+                <div class="panel">
+
+                    <span class="small-title">
+                        WEATHER
+                    </span>
+
+                    <h2>☁️ Weather Information</h2>
+
+                    <div class="weather">
+
+                        <div>
+                            <strong>29°C</strong>
+                            <span>Current</span>
+                        </div>
+
+                        <div>
+                            <strong>20%</strong>
+                            <span>Rain Chance</span>
+                        </div>
+
+                        <div>
+                            <strong>31°C</strong>
+                            <span>Tomorrow</span>
+                        </div>
+
+                    </div>
+
+                    <p class="muted">
+                        Weather data can be connected
+                        to an online weather service later.
+                    </p>
+
+                </div>
+
+
+                <!-- MARKET -->
+
+                <div class="panel">
+
+                    <span class="small-title">
+                        MARKET
+                    </span>
+
+                    <h2>📊 Crop Prices</h2>
+
+                    <div class="market-row">
+
+                        <span>🍅 Tomato</span>
+                        <strong>₹32/kg</strong>
+
+                    </div>
+
+                    <div class="market-row">
+
+                        <span>🧅 Onion</span>
+                        <strong>₹28/kg</strong>
+
+                    </div>
+
+                    <div class="market-row">
+
+                        <span>🥔 Potato</span>
+                        <strong>₹24/kg</strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- NEWS -->
+
+            <section class="panel">
+
+                <span class="small-title">
+                    AGRICULTURE UPDATES
+                </span>
+
+                <h2>📰 Government Schemes & News</h2>
+
+                <div class="news">
+
+                    <div>
+                        <span>🌾</span>
+
+                        <p>
+                            Agricultural subsidy information
+                            and government schemes.
+                        </p>
+                    </div>
+
+                    <div>
+                        <span>💧</span>
+
+                        <p>
+                            Water conservation and
+                            irrigation updates.
+                        </p>
+                    </div>
+
+                    <div>
+                        <span>☀️</span>
+
+                        <p>
+                            Weather and crop advisories.
+                        </p>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- RECOMMENDATION -->
+
+            <section class="recommendation">
+
+                <div class="recommendation-icon">
+                    💡
+                </div>
+
+                <div>
+
+                    <span class="small-title">
+                        KISANSAATHI RECOMMENDATION
+                    </span>
+
+                    <h2 id="recommendation">
+                        Connect your Arduino to begin monitoring.
+                    </h2>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>

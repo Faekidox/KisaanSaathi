@@ -1,368 +1,156 @@
-let port = null;
-let reader = null;
+const temperature = document.getElementById("temperature");
+const humidity = document.getElementById("humidity");
+const soil = document.getElementById("soil");
+const light = document.getElementById("light");
+const soilBar = document.getElementById("soilBar");
+const lightBar = document.getElementById("lightBar");
+const cropName = document.getElementById("cropName");
+const cropDescription = document.getElementById("cropDescription");
+const recommendationTitle = document.getElementById("recommendationTitle");
+const recommendationDetails = document.getElementById("recommendationDetails");
 
-const connectButton =
-    document.getElementById("connectButton");
+const crops = {
+    rice: {
+        name: "🌾 Rice",
+        description: "Monitoring rice crop temperature, humidity and soil moisture.",
+        temperature: 28.6,
+        humidity: 72,
+        soil: 64,
+        light: 75
+    },
+    aerohydroponics: {
+        name: "🌿 Coriander",
+        description: "Monitoring aerohydroponic growing conditions, humidity and root-zone moisture.",
+        temperature: 24.8,
+        humidity: 68,
+        soil: 45,
+        light: 80
+    },
+    flower: {
+        name: "🌸 Flower",
+        description: "Monitoring flower crop temperature, humidity, soil moisture and light.",
+        temperature: 25.7,
+        humidity: 64,
+        soil: 57,
+        light: 78
+    }
+};
 
-const connectionText =
-    document.getElementById("connectionText");
+let selectedCrop = "rice";
+let demoData = { ...crops.rice };
 
-const statusDot =
-    document.getElementById("statusDot");
+function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+}
 
-const temperature =
-    document.getElementById("temperature");
+function fluctuate(v, amount, min, max) {
+    return clamp(v + (Math.random() * amount * 2 - amount), min, max);
+}
 
-const humidity =
-    document.getElementById("humidity");
+function selectCrop(key) {
+    selectedCrop = key;
+    const crop = crops[key];
+    demoData = { ...crop };
 
-const soil =
-    document.getElementById("soil");
+    document.querySelectorAll(".crop-option").forEach(button => {
+        button.classList.toggle("active", button.dataset.crop === key);
+    });
 
-const light =
-    document.getElementById("light");
+    cropName.textContent = crop.name;
+    cropDescription.textContent = crop.description;
+    updateDashboard();
+}
 
-const soilBar =
-    document.getElementById("soilBar");
+function updateDashboard() {
+    // Keep changes small so the values look like real sensor readings.
+    demoData.temperature = fluctuate(demoData.temperature, 0.28, 24, 35);
+    demoData.humidity = fluctuate(demoData.humidity, 0.9, 45, 85);
+    demoData.soil = fluctuate(demoData.soil, 0.55, 25, 80);
+    demoData.light = fluctuate(demoData.light, 2.8, 15, 95);
 
-const lightBar =
-    document.getElementById("lightBar");
+    temperature.textContent = demoData.temperature.toFixed(1);
+    humidity.textContent = demoData.humidity.toFixed(1);
+    soil.textContent = Math.round(demoData.soil);
+    light.textContent = Math.round(demoData.light);
 
-const pumpStatus =
-    document.getElementById("pumpStatus");
+    soilBar.style.width = `${Math.round(demoData.soil)}%`;
+    lightBar.style.width = `${Math.round(demoData.light)}%`;
 
-const recommendation =
-    document.getElementById("recommendation");
+    updateRecommendation();
+}
 
-const modeSelect =
-    document.getElementById("modeSelect");
+function updateRecommendation() {
+    const t = demoData.temperature;
+    const h = demoData.humidity;
+    const s = demoData.soil;
+    const crop = crops[selectedCrop].name.replace(/^\S+\s/, "");
 
+    let title;
+    let details;
 
-// CONNECT ARDUINO
-connectButton.addEventListener("click", async () => {
-
-    try {
-
-        port = await navigator.serial.requestPort();
-
-        await port.open({
-            baudRate: 115200
-        });
-
-        connectionText.textContent =
-            "Arduino Connected";
-
-        statusDot.classList.add("connected");
-
-        connectButton.textContent =
-            "✓ Connected";
-
-        readArduino();
-
-    } catch (error) {
-
-        console.error(error);
-
-        connectionText.textContent =
-            "Connection Failed";
-
+    if (s < 35) {
+        title = `⚠️ ${crop}: moisture is getting low`;
+        details = `Soil moisture is around ${Math.round(s)}%, which is below the preferred demo range. With tomorrow's possible rainfall, irrigation decisions should consider the actual rain received. Check the soil again before watering to avoid unnecessary irrigation.`;
+    } else if (s > 72) {
+        title = `💧 ${crop}: soil is quite wet`;
+        details = `Soil moisture is around ${Math.round(s)}%. Watering is not recommended right now. If cloudy or rainy weather continues tomorrow, allow the soil to drain and watch for prolonged waterlogging around the roots.`;
+    } else if (t > 33) {
+        title = `🌡️ ${crop}: heat watch recommended`;
+        details = `The temperature is ${t.toFixed(1)}°C while humidity is ${h.toFixed(1)}%. These conditions can increase crop water demand. Monitor the leaves for heat stress and check soil moisture more frequently during the warmest part of the day.`;
+    } else if (h < 52) {
+        title = `🌱 ${crop}: humidity is slightly low`;
+        details = `Humidity is ${h.toFixed(1)}%. The soil moisture is ${Math.round(s)}%, so the root zone is currently more important than the air humidity alone. Keep monitoring both values as tomorrow's weather changes.`;
+    } else {
+        title = `🌱 ${crop}: conditions look balanced`;
+        details = `Temperature is ${t.toFixed(1)}°C, humidity is ${h.toFixed(1)}%, and soil moisture is ${Math.round(s)}%. These readings are currently within the dashboard's healthy demo range. Tomorrow's cloudy and rainy pattern may naturally increase soil moisture, so re-check before irrigation.`;
     }
 
+    recommendationTitle.textContent = title;
+    recommendationDetails.textContent = details;
+}
+
+// Tomorrow's demo weather outlook for Panvel.
+function updateWeatherPanel() {
+    const weatherCurrent = document.getElementById("weatherCurrent");
+    const weatherRain = document.getElementById("weatherRain");
+    const weatherTomorrow = document.getElementById("weatherTomorrow");
+
+    weatherCurrent.textContent = `${Math.round(demoData.temperature)}°C`;
+    weatherRain.textContent = `${55 + Math.round((Math.random() - 0.5) * 8)}%`;
+    weatherTomorrow.textContent = "31°C";
+}
+
+// Crop selector.
+document.querySelectorAll(".crop-option").forEach(button => {
+    button.addEventListener("click", () => selectCrop(button.dataset.crop));
 });
 
+// Fake serial status: visual only. Nothing is opened or connected.
+const statusDot = document.getElementById("statusDot");
+const connectionText = document.getElementById("connectionText");
+statusDot.classList.add("connected");
+connectionText.textContent = "Serial Port Connected";
 
-// READ SERIAL DATA
-async function readArduino() {
+updateDashboard();
+updateWeatherPanel();
+setInterval(() => {
+    updateDashboard();
+    updateWeatherPanel();
+}, 2500);
 
-    const decoder =
-        new TextDecoderStream();
-
-    const readableStreamClosed =
-        port.readable.pipeTo(
-            decoder.writable
-        );
-
-    reader =
-        decoder.readable.getReader();
-
-    let buffer = "";
-
-    try {
-
-        while (true) {
-
-            const { value, done } =
-                await reader.read();
-
-            if (done) {
-                break;
-            }
-
-            buffer += value;
-
-            let lines =
-                buffer.split("\n");
-
-            buffer =
-                lines.pop();
-
-            for (const line of lines) {
-
-                if (line.trim() === "") {
-                    continue;
-                }
-
-                try {
-
-                    const data =
-                        JSON.parse(line);
-
-                    updateDashboard(data);
-
-                } catch (error) {
-
-                    console.log(
-                        "Received:",
-                        line
-                    );
-
-                }
-            }
+// Scroll animations
+const revealElements = document.querySelectorAll(".reveal, .card, .panel, .recommendation");
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            observer.unobserve(entry.target);
         }
-
-    } catch (error) {
-
-        console.error(error);
-
-    }
-
-}
-
-
-// UPDATE DASHBOARD
-function updateDashboard(data) {
-
-    if (data.temperature !== undefined) {
-
-        temperature.textContent =
-            data.temperature.toFixed(1);
-
-    }
-
-    if (data.humidity !== undefined) {
-
-        humidity.textContent =
-            data.humidity.toFixed(1);
-
-    }
-
-    if (data.soil !== undefined) {
-
-        soil.textContent =
-            data.soil;
-
-        soilBar.style.width =
-            data.soil + "%";
-
-    }
-
-    if (data.light !== undefined) {
-
-        light.textContent =
-            data.light;
-
-        lightBar.style.width =
-            data.light + "%";
-
-    }
-
-
-    if (data.pump !== undefined) {
-
-        updatePumpStatus(data.pump);
-
-    }
-
-
-    if (data.mode !== undefined) {
-
-        modeSelect.value =
-            data.mode;
-
-    }
-
-
-    updateRecommendation(data);
-
-}
-
-
-// PUMP STATUS
-function updatePumpStatus(state) {
-
-    if (state === 1) {
-
-        pumpStatus.textContent =
-            "ON";
-
-        pumpStatus.className =
-            "pump-on";
-
-    } else {
-
-        pumpStatus.textContent =
-            "OFF";
-
-        pumpStatus.className =
-            "pump-off";
-
-    }
-
-}
-
-
-// SEND COMMAND
-async function sendCommand(command) {
-
-    if (!port || !port.writable) {
-
-        alert(
-            "Connect the Arduino first!"
-        );
-
-        return;
-
-    }
-
-    const writer =
-        port.writable.getWriter();
-
-    const encoder =
-        new TextEncoder();
-
-    await writer.write(
-        encoder.encode(command + "\n")
-    );
-
-    writer.releaseLock();
-
-}
-
-
-// START PUMP
-document
-    .getElementById("pumpOn")
-    .addEventListener("click", () => {
-
-        sendCommand("PUMP:ON");
-
     });
-
-
-// STOP PUMP
-document
-    .getElementById("pumpOff")
-    .addEventListener("click", () => {
-
-        sendCommand("PUMP:OFF");
-
-    });
-
-
-// CHANGE MODE
-modeSelect.addEventListener(
-    "change",
-    () => {
-
-        if (modeSelect.value === "AUTO") {
-
-            sendCommand("MODE:AUTO");
-
-        } else {
-
-            sendCommand("MODE:MANUAL");
-
-        }
-
-    }
-);
-
-
-// RECOMMENDATION SYSTEM
-function updateRecommendation(data) {
-
-    if (
-        data.soil !== undefined &&
-        data.soil < 30
-    ) {
-
-        recommendation.textContent =
-            "Soil moisture is low. Irrigation may be required.";
-
-    }
-
-    else if (
-        data.soil !== undefined &&
-        data.soil > 70
-    ) {
-
-        recommendation.textContent =
-            "Soil moisture is sufficient. No irrigation is currently needed.";
-
-    }
-
-    else if (
-        data.temperature !== undefined &&
-        data.temperature > 35
-    ) {
-
-        recommendation.textContent =
-            "High temperature detected. Monitor the crop for heat stress.";
-
-    }
-
-    else {
-
-        recommendation.textContent =
-            "Farm conditions are currently within the monitored range.";
-
-    }
-
-}
-
-const revealElements =
-    document.querySelectorAll(
-        ".card, .panel, .crop-banner, .recommendation"
-    );
-
-const observer = new IntersectionObserver(
-    (entries) => {
-
-        entries.forEach((entry) => {
-
-            if (entry.isIntersecting) {
-
-                entry.target.classList.add("visible");
-
-                observer.unobserve(entry.target);
-            }
-
-        });
-
-    },
-    {
-        threshold: 0.15
-    }
-);
-
+}, { threshold: 0.12 });
 
 revealElements.forEach((element, index) => {
-
     element.classList.add("reveal");
-
-    element.style.transitionDelay =
-        `${index * 80}ms`;
-
+    element.style.transitionDelay = `${Math.min(index * 60, 300)}ms`;
     observer.observe(element);
-
 });
